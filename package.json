@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest --config jest.config.js",
     "test:unit": "jest --config jest.config.js --testPathIgnorePatterns=e2e",
-    "test:e2e": "jest --config jest.config.js --testPathPattern=e2e",
+    "test:e2e": "jest --config jest.e2e.config.js",
     "test:coverage": "jest --config jest.config.js --coverage --testPathIgnorePatterns=e2e",
     "lint": "eslint content/ background/ popup/ tests/",
     "lint:fix": "eslint --fix content/ background/ popup/ tests/",
