@@ -63,32 +63,39 @@
 
   // ── Settings ───────────────────────────────────────────────────────────────
 
+  // Single source of truth: shared/defaults.js (loaded before this script)
+  const defaults = (typeof FB_PILOT_DEFAULTS !== 'undefined')
+    ? FB_PILOT_DEFAULTS
+    : require('../shared/defaults.js');
+
   function getSettingsFromUI() {
     return {
-      inviteWord: inviteWordInput.value.trim() || 'Invite',
-      detectMode: detectModeSelect.value || 'both',
-      maxPerBatch: parseInt(maxBatchInput.value, 10) || 50,
-      delayMin: parseInt(delayMinInput.value, 10) || 800,
-      delayMax: parseInt(delayMaxInput.value, 10) || 2500,
-      coffeeBreakInterval: parseInt(coffeeIntervalInput.value, 10) || 15,
-      coffeeBreakDuration: parseInt(coffeeDurationInput.value, 10) || 5000,
+      inviteWord: inviteWordInput.value.trim() || defaults.inviteWord,
+      detectMode: detectModeSelect.value || defaults.detectMode,
+      maxPerBatch: parseInt(maxBatchInput.value, 10) || defaults.maxPerBatch,
+      delayMin: parseInt(delayMinInput.value, 10) || defaults.delayMin,
+      delayMax: parseInt(delayMaxInput.value, 10) || defaults.delayMax,
+      coffeeBreakInterval: parseInt(coffeeIntervalInput.value, 10) || defaults.coffeeBreakInterval,
+      coffeeBreakDuration: parseInt(coffeeDurationInput.value, 10) || defaults.coffeeBreakDuration,
     };
   }
 
   function applySettingsToUI(s) {
-    inviteWordInput.value = s.inviteWord || 'Invite';
-    detectModeSelect.value = s.detectMode || 'both';
-    maxBatchInput.value = s.maxPerBatch || 50;
-    delayMinInput.value = s.delayMin || 800;
-    delayMaxInput.value = s.delayMax || 2500;
-    coffeeIntervalInput.value = s.coffeeBreakInterval || 15;
-    coffeeDurationInput.value = s.coffeeBreakDuration || 5000;
+    inviteWordInput.value = s.inviteWord || defaults.inviteWord;
+    detectModeSelect.value = s.detectMode || defaults.detectMode;
+    maxBatchInput.value = s.maxPerBatch || defaults.maxPerBatch;
+    delayMinInput.value = s.delayMin || defaults.delayMin;
+    delayMaxInput.value = s.delayMax || defaults.delayMax;
+    coffeeIntervalInput.value = s.coffeeBreakInterval || defaults.coffeeBreakInterval;
+    coffeeDurationInput.value = s.coffeeBreakDuration || defaults.coffeeBreakDuration;
   }
 
   async function loadSettings() {
+    // Apply defaults first, then override with saved settings
+    applySettingsToUI(defaults);
     const result = await chrome.storage.local.get('fbPilotSettings');
     if (result.fbPilotSettings) {
-      applySettingsToUI(result.fbPilotSettings);
+      applySettingsToUI({ ...defaults, ...result.fbPilotSettings });
     }
     const langResult = await chrome.storage.local.get('fbPilotLang');
     if (langResult.fbPilotLang) {
@@ -253,7 +260,7 @@
       isRunning = false;
     } else {
       const settings = getSettingsFromUI();
-      await saveSettings();
+      await chrome.storage.local.set({ fbPilotSettings: settings });
       await sendToContent({ type: 'start', settings });
       isRunning = true;
     }

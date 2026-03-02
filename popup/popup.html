@@ -48,7 +48,7 @@
       <div class="settings-body">
         <label>
           <span id="label-invite-word">Invite button text</span>
-          <input type="text" id="invite-word" value="Invite">
+          <input type="text" id="invite-word">
         </label>
         <label>
           <span id="label-detect-mode">Detection mode</span>
@@ -60,28 +60,29 @@
         </label>
         <label>
           <span id="label-max-batch">Max per batch</span>
-          <input type="number" id="max-batch" min="1" max="500" value="50">
+          <input type="number" id="max-batch" min="1" max="500">
         </label>
         <label>
           <span id="label-delay-min">Min delay (ms)</span>
-          <input type="number" id="delay-min" min="200" max="10000" value="800">
+          <input type="number" id="delay-min" min="200" max="10000">
         </label>
         <label>
           <span id="label-delay-max">Max delay (ms)</span>
-          <input type="number" id="delay-max" min="200" max="10000" value="2500">
+          <input type="number" id="delay-max" min="200" max="10000">
         </label>
         <label>
           <span id="label-coffee-interval">Coffee break every N clicks</span>
-          <input type="number" id="coffee-interval" min="0" max="100" value="15">
+          <input type="number" id="coffee-interval" min="0" max="100">
         </label>
         <label>
           <span id="label-coffee-duration">Coffee break duration (ms)</span>
-          <input type="number" id="coffee-duration" min="0" max="60000" value="5000">
+          <input type="number" id="coffee-duration" min="0" max="60000">
         </label>
       </div>
     </details>
   </div>
 
+  <script src="../shared/defaults.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

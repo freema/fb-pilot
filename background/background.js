@@ -28,7 +28,6 @@
     if (data.date !== today) {
       const newData = { date: today, count: 0 };
       await setDailyData(newData);
-      await updateBadge(0);
       return newData;
     }
     return data;
@@ -67,11 +66,6 @@
         return true;
       case 'getDailyCount':
         resetIfNewDay().then((current) => sendResponse({ count: current.count }));
-        return true;
-      case 'resetDailyCount':
-        setDailyData({ date: todayKey(), count: 0 }).then(() => {
-          updateBadge(0).then(() => sendResponse({ ok: true }));
-        });
         return true;
       default:
         // Let other listeners handle it

@@ -22,15 +22,10 @@
     BOTH: 'both',
   };
 
-  const DEFAULT_SETTINGS = {
-    maxPerBatch: 50,
-    delayMin: 800,
-    delayMax: 2500,
-    coffeeBreakInterval: 15,
-    coffeeBreakDuration: 5000,
-    inviteWord: 'Invite',
-    detectMode: DetectMode.BOTH,
-  };
+  // Single source of truth: shared/defaults.js (loaded before this script in manifest)
+  const DEFAULT_SETTINGS = (typeof FB_PILOT_DEFAULTS !== 'undefined')
+    ? { ...FB_PILOT_DEFAULTS } // browser: injected via manifest content_scripts
+    : { ...require('../shared/defaults.js') }; // tests: Node.js require
 
   // ── Module state ───────────────────────────────────────────────────────────
   let state = State.IDLE;
@@ -371,10 +366,6 @@
         break;
       case 'getStatus':
         sendResponse(getStatus());
-        break;
-      case 'updateSettings':
-        Object.assign(settings, msg.settings);
-        sendResponse({ ok: true });
         break;
       default:
         sendResponse({ ok: false, error: 'unknown message type' });

@@ -511,16 +511,9 @@ describe('randomDelay', () => {
 // ── DEFAULT_SETTINGS ─────────────────────────────────────────────────────────
 
 describe('DEFAULT_SETTINGS', () => {
-  test('has expected default values', () => {
-    expect(contentModule.DEFAULT_SETTINGS).toEqual({
-      maxPerBatch: 50,
-      delayMin: 800,
-      delayMax: 2500,
-      coffeeBreakInterval: 15,
-      coffeeBreakDuration: 5000,
-      inviteWord: 'Invite',
-      detectMode: 'both',
-    });
+  test('matches shared defaults (single source of truth)', () => {
+    const shared = require('../shared/defaults.js');
+    expect(contentModule.DEFAULT_SETTINGS).toEqual(shared);
   });
 });
 
@@ -562,14 +555,6 @@ describe('Message listener', () => {
     const sendResponse = jest.fn();
     messageListener({ type: 'getStatus' }, {}, sendResponse);
     expect(sendResponse).toHaveBeenCalledWith(expect.objectContaining({ state: 'IDLE' }));
-  });
-
-  test('updateSettings merges partial settings', () => {
-    const sendResponse = jest.fn();
-    messageListener({ type: 'updateSettings', settings: { maxPerBatch: 123 } }, {}, sendResponse);
-    expect(sendResponse).toHaveBeenCalledWith({ ok: true });
-    expect(contentModule.getStatus().settings.maxPerBatch).toBe(123);
-    contentModule._setSettings({ maxPerBatch: 50 });
   });
 
   test('unknown message type returns error', () => {

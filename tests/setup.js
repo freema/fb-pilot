@@ -76,6 +76,9 @@ global.chrome = {
   action: actionMock,
 };
 
+// ── Shared defaults (single source of truth) ─────────────────────────────────
+global.FB_PILOT_DEFAULTS = require('../shared/defaults.js');
+
 // ── Test helpers ─────────────────────────────────────────────────────────────
 global.__testHelpers = {
   storageData,
