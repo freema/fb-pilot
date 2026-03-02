@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=320">
+  <link rel="stylesheet" href="popup.css">
+  <title>FB Pilot</title>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>FB Pilot</h1>
+      <select id="lang-select" class="lang-select">
+        <option value="en">EN</option>
+        <option value="cz">CZ</option>
+      </select>
+    </header>
+
+    <div id="soft-limit-banner" class="banner banner-warning hidden">
+      <span id="soft-limit-text">Soft limit detected — Facebook may be throttling.</span>
+    </div>
+
+    <div class="status-section">
+      <div id="status-indicator" class="status-dot status-idle"></div>
+      <span id="status-text" class="status-label">Idle</span>
+    </div>
+
+    <button id="start-stop-btn" class="btn-primary">Start</button>
+
+    <div class="counters">
+      <div class="counter-item">
+        <span id="batch-label" class="counter-label">Batch</span>
+        <span id="batch-count" class="counter-value">0</span>
+      </div>
+      <div class="counter-item">
+        <span id="daily-label" class="counter-label">Today</span>
+        <span id="daily-count" class="counter-value">0</span>
+      </div>
+    </div>
+
+    <div id="scroll-prompt" class="scroll-prompt hidden">
+      <span id="scroll-text">Scroll down to load more reactions</span>
+      <div class="scroll-arrow">&#8595;</div>
+    </div>
+
+    <details class="settings-panel">
+      <summary id="settings-label">Settings</summary>
+      <div class="settings-body">
+        <label>
+          <span id="label-invite-word">Invite button text</span>
+          <input type="text" id="invite-word" value="Invite">
+        </label>
+        <label>
+          <span id="label-detect-mode">Detection mode</span>
+          <select id="detect-mode">
+            <option value="both" id="detect-opt-both">Text + aria-label</option>
+            <option value="text" id="detect-opt-text">Text only</option>
+            <option value="aria" id="detect-opt-aria">aria-label only</option>
+          </select>
+        </label>
+        <label>
+          <span id="label-max-batch">Max per batch</span>
+          <input type="number" id="max-batch" min="1" max="500" value="50">
+        </label>
+        <label>
+          <span id="label-delay-min">Min delay (ms)</span>
+          <input type="number" id="delay-min" min="200" max="10000" value="800">
+        </label>
+        <label>
+          <span id="label-delay-max">Max delay (ms)</span>
+          <input type="number" id="delay-max" min="200" max="10000" value="2500">
+        </label>
+        <label>
+          <span id="label-coffee-interval">Coffee break every N clicks</span>
+          <input type="number" id="coffee-interval" min="0" max="100" value="15">
+        </label>
+        <label>
+          <span id="label-coffee-duration">Coffee break duration (ms)</span>
+          <input type="number" id="coffee-duration" min="0" max="60000" value="5000">
+        </label>
+      </div>
+    </details>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
