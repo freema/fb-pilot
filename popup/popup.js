@@ -12,7 +12,7 @@
   async function loadLocales() {
     for (const lang of SUPPORTED_LANGS) {
       try {
-        const resp = await fetch(`../_locales/${lang}/messages.json`);
+        const resp = await fetch(`../locales/${lang}/messages.json`);
         i18n[lang] = await resp.json();
       } catch (_) {
         // fallback: keep empty, applyLanguage will use 'en'

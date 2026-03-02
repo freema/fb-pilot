@@ -5,8 +5,8 @@ const fs = require('fs');
 const path = require('path');
 
 // Load locale JSONs for mocking fetch
-const enMessages = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '_locales', 'en', 'messages.json'), 'utf-8'));
-const czMessages = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '_locales', 'cz', 'messages.json'), 'utf-8'));
+const enMessages = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'locales', 'en', 'messages.json'), 'utf-8'));
+const czMessages = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'locales', 'cz', 'messages.json'), 'utf-8'));
 
 let popupModule;
 

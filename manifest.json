@@ -3,7 +3,6 @@
   "name": "FB Pilot",
   "version": "1.0.0",
   "description": "Batch-invite fans from Facebook page reaction lists with human-like clicking and rate limit protection.",
-  "default_locale": "en",
   "permissions": ["activeTab", "storage"],
   "host_permissions": ["https://www.facebook.com/*"],
   "background": {
