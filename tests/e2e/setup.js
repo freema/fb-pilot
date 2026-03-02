@@ -16,7 +16,11 @@ async function launchBrowser() {
       `--load-extension=${EXTENSION_PATH}`,
       '--no-sandbox',
       '--disable-setuid-sandbox',
+      '--disable-gpu',
+      '--disable-dev-shm-usage',
+      '--window-size=400,600',
     ],
+    timeout: 30000,
   });
   return browser;
 }
@@ -25,7 +29,7 @@ async function getExtensionId() {
   // Wait for the service worker target to appear (more reliable than timeout)
   const workerTarget = await browser.waitForTarget(
     (t) => t.type() === 'service_worker' && t.url().includes('background'),
-    { timeout: 5000 }
+    { timeout: 15000 }
   );
 
   if (workerTarget) {

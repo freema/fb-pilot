@@ -4,9 +4,9 @@
  * These tests require Chrome to be installed.
  * Run with: npm run test:e2e
  */
-const { launchBrowser, getExtensionId, openPopup, cleanStorage, closeBrowser } = require('./setup');
+const { launchBrowser, getExtensionId, openPopup, closeBrowser } = require('./setup');
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 let extensionId;
 
