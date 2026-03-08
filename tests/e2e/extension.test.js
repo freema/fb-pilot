@@ -62,9 +62,9 @@ describe('Popup UI', () => {
     expect(elements.statusText).toBe(true);
   });
 
-  test('start button shows "Start" initially', async () => {
+  test('start button shows "Spustit" initially (CZ default)', async () => {
     const text = await page.$eval('#start-stop-btn', (el) => el.textContent);
-    expect(text).toBe('Start');
+    expect(text).toBe('Spustit');
   });
 
   test('status indicator has idle class initially', async () => {
@@ -103,23 +103,23 @@ describe('Popup UI', () => {
   });
 
   test('changing language updates settings label', async () => {
-    await page.select('#lang-select', 'cz');
+    await page.select('#lang-select', 'en');
     await page.waitForFunction(
-      () => document.getElementById('settings-label').textContent !== 'Settings',
+      () => document.getElementById('settings-label').textContent !== 'Nastaven\u00ed',
       { timeout: 2000 }
     );
     const text = await page.$eval('#settings-label', (el) => el.textContent);
-    expect(text).toBe('Nastaven\u00ed');
+    expect(text).toBe('Settings');
   });
 
   test('changing language updates detect mode labels', async () => {
-    await page.select('#lang-select', 'cz');
+    await page.select('#lang-select', 'en');
     await page.waitForFunction(
-      () => document.getElementById('detect-opt-text').textContent !== 'Text only',
+      () => document.getElementById('detect-opt-text').textContent !== 'Pouze text',
       { timeout: 2000 }
     );
     const text = await page.$eval('#detect-opt-text', (el) => el.textContent);
-    expect(text).toBe('Pouze text');
+    expect(text).toBe('Text only');
   });
 
   test('settings have correct default values', async () => {
@@ -133,7 +133,7 @@ describe('Popup UI', () => {
       coffeeDuration: document.getElementById('coffee-duration').value,
     }));
 
-    expect(defaults.inviteWord).toBe('Invite');
+    expect(defaults.inviteWord).toBe('Pozvat');
     expect(defaults.detectMode).toBe('both');
     expect(defaults.maxBatch).toBe('50');
     expect(defaults.delayMin).toBe('800');
