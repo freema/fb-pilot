@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1.0 (2026-03-08)
+
+### Added
+- Auto-scroll — automatically scrolls the reaction list to load more users (no more manual scrolling)
+- `scrollIntoView()` before each click so humanClick dispatches at visible coordinates
+- `startsWith` matching for aria-label (catches "Pozvat uživatele XY" etc.)
+
+### Changed
+- Default language switched to Czech (CZ)
+- Default invite word changed from "Invite" to "Pozvat"
+- Soft limit streak threshold raised from 3 to 5 (fewer false positives)
+- Post-click DOM check wait increased from 300ms to 600ms
+- `isVisible()` simplified — removed overly strict `offsetParent` check
+- `findInviteTextNodes()` now uses innermost-match logic instead of leaf-node-only filter
+- Unit tests updated and expanded (101 tests total)
+
 ## 1.0.0 (2026-03-02)
 
 ### Added

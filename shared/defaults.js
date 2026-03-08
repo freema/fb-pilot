@@ -9,7 +9,7 @@ var FB_PILOT_DEFAULTS = {
   delayMax: 2500,
   coffeeBreakInterval: 15,
   coffeeBreakDuration: 5000,
-  inviteWord: 'Invite',
+  inviteWord: 'Pozvat',
   detectMode: 'both',
 };
 

@@ -57,7 +57,7 @@
   const labelCoffeeInterval = $('label-coffee-interval');
   const labelCoffeeDuration = $('label-coffee-duration');
 
-  let currentLang = 'en';
+  let currentLang = 'cz';
   let isRunning = false;
   let pollTimer = null;
 

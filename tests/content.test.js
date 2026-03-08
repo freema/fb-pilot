@@ -143,12 +143,13 @@ describe('findInviteTextNodes', () => {
     expect(nodes).toHaveLength(2);
   });
 
-  test('skips non-leaf elements (elements with children)', () => {
+  test('skips containers with too many nested elements', () => {
     document.body.innerHTML = '<div>Invite<span>child</span></div><span>Invite</span>';
     document.querySelectorAll('span, div').forEach(makeVisible);
 
     const nodes = contentModule.findInviteTextNodes('Invite');
-    // Only the leaf <span>Invite</span> should match, not the <div> which has children
+    // The <div> has textContent "Invitechild" which doesn't match "Invite"
+    // Only the standalone <span>Invite</span> matches
     expect(nodes).toHaveLength(1);
   });
 
@@ -239,8 +240,16 @@ describe('findAriaLabelButtons', () => {
     expect(results).toHaveLength(0);
   });
 
-  test('does not match partial aria-label', () => {
+  test('matches aria-label that starts with invite word', () => {
     document.body.innerHTML = '<div aria-label="Invite to like page" role="button"></div>';
+    document.querySelectorAll('div').forEach(makeVisible);
+
+    const results = contentModule.findAriaLabelButtons('Invite');
+    expect(results).toHaveLength(1);
+  });
+
+  test('does not match aria-label that does not start with invite word', () => {
+    document.body.innerHTML = '<div aria-label="Uninvite from page" role="button"></div>';
     document.querySelectorAll('div').forEach(makeVisible);
 
     const results = contentModule.findAriaLabelButtons('Invite');
@@ -578,7 +587,7 @@ describe('Message listener', () => {
     expect(contentModule.getStatus().settings.inviteWord).toBe('Pozvat');
     // Stop to clean up
     messageListener({ type: 'stop' }, {}, jest.fn());
-    contentModule._setSettings({ inviteWord: 'Invite' });
+    contentModule._setSettings(contentModule.DEFAULT_SETTINGS);
   });
 
   test('returns true for async sendResponse', () => {

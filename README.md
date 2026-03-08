@@ -1,11 +1,11 @@
 # FB Pilot
 
-> Chrome extension for Facebook page management. Batch-invite fans from post reaction lists with human-like clicking and built-in rate limit protection.
+> Chrome extension pro správu Facebook stránek. Hromadné zvání fanoušků ze seznamu reakcí s lidským klikáním a ochranou proti rate limitům.
 
 ![CI](https://github.com/user/fb-pilot/actions/workflows/test.yml/badge.svg)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-40%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-101%20passing-brightgreen)
 
 ## How It Compares
 
@@ -13,6 +13,7 @@
 |---------|----------|---------------------|--------------------------|----------------|
 | Human-like events (mouseover→mousedown→mouseup→click) | **Yes** | Unknown | Unknown | No (bare `.click()`) |
 | Soft limit detection | **Yes** (text-change check) | No | No | No |
+| Auto-scroll | **Yes** (finds scrollable container) | No | No | No (manual scroll) |
 | MutationObserver for new buttons | **Yes** | No (scroll loop) | No | No (manual scroll + retry) |
 | Coffee break pauses | **Yes** | Unknown | No | No |
 | Random delays | Yes | Yes | Yes | Yes (2-4s fixed) |
@@ -20,33 +21,36 @@
 | Daily counter + badge | **Yes** | Session stats | No | Console log |
 | State machine | **Yes** (5 states) | Basic start/stop | Basic | None |
 | Dark mode | **Yes** | No | No | N/A |
-| Bilingual UI (EN/CZ) | **Yes** | English only | English only | N/A |
+| Bilingual UI (CZ/EN) | **Yes** | English only | English only | N/A |
 | Open source | **Yes** | No | No | Yes |
-| Unit tests | **40 tests** | None public | None public | None |
+| Unit tests | **101 tests** | None public | None public | None |
 | Price | Free | Free | Freemium (250/day free) | Free |
 
 ### What makes FB Pilot different
 
 1. **Human-like event sequence** — dispatches `mouseover → mousedown → mouseup → click` with correct coordinates calculated from `getBoundingClientRect()`. Most alternatives just call `.click()` which is trivially detectable.
 
-2. **Soft limit detection** — checks if button text actually changes after click. If 3 consecutive clicks don't change anything, FB is throttling and the extension stops automatically. No other tool does this.
+2. **Soft limit detection** — checks if button text actually changes after click. If 5 consecutive clicks don't change anything, FB is throttling and the extension stops automatically. No other tool does this.
 
-3. **MutationObserver** — instead of blind scroll-retry loops, reacts to actual DOM changes when user scrolls. More responsive and less wasteful.
+3. **Auto-scroll** — automatically scrolls the reaction list to load more users. No need to manually scroll — just click Start and walk away.
 
-4. **State machine** — clean 5-state model (IDLE → RUNNING → WAITING_FOR_SCROLL → SOFT_LIMITED → BATCH_DONE) instead of boolean flags. Predictable behavior.
+4. **MutationObserver** — reacts to actual DOM changes after auto-scroll. More responsive and less wasteful than blind retry loops.
 
-5. **Coffee breaks** — periodic longer pauses to further randomize the pattern.
+5. **State machine** — clean 5-state model (IDLE → RUNNING → WAITING_FOR_SCROLL → SOFT_LIMITED → BATCH_DONE) instead of boolean flags. Predictable behavior.
+
+6. **Coffee breaks** — periodic longer pauses to further randomize the pattern.
 
 ## Features
 
 - **Human-like clicking** — realistic mouse event sequences with calculated coordinates
-- **Configurable invite text** — works with "Invite", "Pozvat", or any custom text
+- **Auto-scroll** — automatically scrolls reaction list to load more users
+- **Configurable invite text** — works with "Pozvat", "Invite", or any custom text
 - **Random delays** — configurable min/max range between clicks
 - **Coffee breaks** — automatic pauses at configurable intervals
 - **Soft limit detection** — auto-stops when Facebook starts throttling
-- **Scroll detection** — MutationObserver watches for new buttons
+- **MutationObserver** — detects new buttons after auto-scroll
 - **Daily counter** — tracks invites per day with extension badge
-- **Bilingual UI** — English and Czech
+- **Bilingual UI** — Czech (default) and English
 - **Dark mode** — follows system preference
 
 ## Installation
@@ -70,17 +74,16 @@
 1. Go to a Facebook page you manage
 2. Open a post's reaction list (click on the reaction count)
 3. Click the FB Pilot icon in toolbar
-4. Set language and invite button text (e.g., "Pozvat" for Czech)
-5. Click **Start**
-6. Scroll down in the reaction list to load more users
-7. The extension auto-clicks invite buttons as they appear
-8. Click **Stop** to pause, or wait for the batch to complete
+4. Click **Spustit** (Start)
+5. The extension auto-clicks invite buttons and auto-scrolls to load more
+6. Click **Zastavit** (Stop) to pause, or wait for the batch to complete
 
 ## Configuration
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Invite button text | `Invite` | Text on buttons. `Pozvat` for Czech, etc. |
+| Invite button text | `Pozvat` | Text on buttons. `Invite` for English, etc. |
+| Detection mode | `both` | Text + aria-label, text only, or aria-label only |
 | Max per batch | `50` | Stop after N successful invites |
 | Min delay (ms) | `800` | Minimum wait between clicks |
 | Max delay (ms) | `2500` | Maximum wait between clicks |
@@ -91,11 +94,11 @@
 
 | State | Color | Meaning |
 |-------|-------|---------|
-| Idle | Blue | Not running |
-| Running | Green | Clicking invite buttons |
-| Waiting for scroll | Yellow | No more buttons — scroll down to load more |
-| Soft limited | Red | Facebook is throttling — stop and try later |
-| Batch done | Blue | Reached max per batch |
+| Nečinný / Idle | Blue | Not running |
+| Běží / Running | Green | Clicking invite buttons |
+| Auto-scroll | Yellow | No more buttons — auto-scrolling to load more |
+| Soft limit | Red | Facebook is throttling — stop and try later |
+| Dávka dokončena / Batch done | Blue | Reached max per batch |
 
 ## Development
 
@@ -128,7 +131,7 @@ npm run ci            # Full CI pipeline (lint + validate + tests + coverage)
 GitHub Actions runs on every push/PR to `main`:
 
 1. **Lint & Validate** — ESLint + manifest.json validation
-2. **Unit Tests** — 40 tests with coverage report (uploaded as artifact)
+2. **Unit Tests** — 101 tests with coverage report (uploaded as artifact)
 3. **E2E Tests** — Puppeteer in headed Chrome via xvfb
 
 ### Project Structure
@@ -147,9 +150,9 @@ fb-pilot/
 ├── icons/                    # Extension icons (16, 48, 128px)
 ├── tests/
 │   ├── setup.js             # Chrome API mocks
-│   ├── content.test.js      # Content script tests (22 tests)
-│   ├── background.test.js   # Background tests (9 tests)
-│   ├── popup.test.js        # Popup tests (9 tests)
+│   ├── content.test.js      # Content script tests
+│   ├── background.test.js   # Background tests
+│   ├── popup.test.js        # Popup tests
 │   └── e2e/
 │       ├── setup.js         # Puppeteer setup
 │       └── extension.test.js
@@ -181,11 +184,11 @@ fb-pilot/
 
 ## FAQ
 
-**Q: Does this work with non-English Facebook?**
-A: Yes — change "Invite button text" to match your locale (e.g., "Pozvat" for Czech, "Einladen" for German).
+**Q: Does this work with non-Czech Facebook?**
+A: Yes — change "Invite button text" in Settings to match your locale (e.g., "Invite" for English, "Einladen" for German).
 
 **Q: What's the soft limit?**
-A: When Facebook silently ignores your clicks (button text stays "Invite" instead of changing to "Invited"), the extension detects this and stops after 3 failed attempts.
+A: When Facebook silently ignores your clicks (button text stays "Pozvat" instead of changing to "Pozván(a)"), the extension detects this and stops after 5 failed attempts.
 
 **Q: Is this safe?**
 A: The extension mimics human behavior with random delays and coffee breaks. However, excessive use can trigger Facebook's rate limits. Use reasonable settings.

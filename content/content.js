@@ -80,8 +80,13 @@
     const results = [];
 
     for (const el of candidates) {
-      if (el.children.length > 0) continue; // leaf nodes only
-      if (el.textContent.trim().toLowerCase() !== word) continue;
+      const text = el.textContent.trim().toLowerCase();
+      if (text !== word) continue;
+      // Prefer innermost match: skip if a child element has the same matching text
+      const hasChildMatch = Array.from(el.querySelectorAll('span, div')).some(
+        (child) => child.textContent.trim().toLowerCase() === word
+      );
+      if (hasChildMatch) continue;
       if (!isVisible(el)) continue;
       results.push(el);
     }
@@ -105,7 +110,7 @@
 
     for (const el of candidates) {
       const label = (el.getAttribute('aria-label') || '').trim().toLowerCase();
-      if (label !== word) continue;
+      if (label !== word && !label.startsWith(word)) continue;
       if (!isVisible(el)) continue;
       if (el.disabled || el.getAttribute('aria-disabled') === 'true') continue;
       results.push(el);
@@ -147,11 +152,10 @@
    * Check if an element is visible (has layout dimensions and is not hidden).
    */
   function isVisible(el) {
-    if (!el.offsetParent && el.style.position !== 'fixed') return false;
-    const style = window.getComputedStyle(el);
-    if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
     const rect = el.getBoundingClientRect();
-    return rect.width > 0 && rect.height > 0;
+    if (rect.width <= 0 || rect.height <= 0) return false;
+    const style = window.getComputedStyle(el);
+    return style.display !== 'none' && style.visibility !== 'hidden';
   }
 
   /**
@@ -198,6 +202,69 @@
     }
   }
 
+  // ── Auto-scroll ──────────────────────────────────────────────────────────
+
+  /**
+   * Find the scrollable container for the Facebook reaction list.
+   * Looks for a scrollable element inside a dialog/modal.
+   */
+  function findScrollContainer() {
+    // Strategy 1: dialog with a scrollable child
+    const dialogs = document.querySelectorAll('[role="dialog"]');
+    for (const dialog of dialogs) {
+      const scrollables = dialog.querySelectorAll('div');
+      for (const div of scrollables) {
+        if (div.scrollHeight > div.clientHeight + 10) {
+          const style = window.getComputedStyle(div);
+          const overflow = style.overflowY;
+          if (overflow === 'auto' || overflow === 'scroll' || overflow === 'overlay') {
+            return div;
+          }
+        }
+      }
+    }
+    // Strategy 2: any scrollable div that contains invite-word text
+    const word = settings.inviteWord.toLowerCase();
+    const allDivs = document.querySelectorAll('div');
+    for (const div of allDivs) {
+      if (div.scrollHeight > div.clientHeight + 10 &&
+          div.textContent.toLowerCase().includes(word)) {
+        const style = window.getComputedStyle(div);
+        const overflow = style.overflowY;
+        if (overflow === 'auto' || overflow === 'scroll' || overflow === 'overlay') {
+          return div;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Auto-scroll the reaction list container down to load more items.
+   * Returns true if new nodes appeared after scrolling.
+   */
+  async function autoScroll(signal, maxAttempts) {
+    const attempts = maxAttempts || 3;
+    for (let i = 0; i < attempts; i++) {
+      if (signal.aborted) return false;
+      const container = findScrollContainer();
+      if (!container) return false;
+
+      pendingNewNodes = false;
+      const scrollBefore = container.scrollTop;
+      container.scrollBy({ top: 400, behavior: 'smooth' });
+      await sleep(800);
+
+      // Check if scroll actually moved (not at bottom already)
+      if (container.scrollTop === scrollBefore) return false;
+
+      // Wait for MutationObserver to flag new nodes
+      const gotNew = await waitForNewNodes(signal, 3000);
+      if (gotNew) return true;
+    }
+    return false;
+  }
+
   // ── Core click loop ────────────────────────────────────────────────────────
 
   async function runClickLoop(signal) {
@@ -211,17 +278,17 @@
 
       if (buttons.length === 0) {
         setState(State.WAITING_FOR_SCROLL);
-        pendingNewNodes = false;
         broadcastStatus();
 
-        // Wait for new nodes from scroll or abort
-        const gotNew = await waitForNewNodes(signal, 30000);
+        // Auto-scroll to load more reactions
+        const gotNew = await autoScroll(signal, 3);
         if (signal.aborted) break;
         if (!gotNew) {
           setState(State.BATCH_DONE);
           break;
         }
         setState(State.RUNNING);
+        broadcastStatus();
         continue;
       }
 
@@ -233,6 +300,10 @@
           return;
         }
 
+        // Scroll button into view so humanClick dispatches at visible coordinates
+        btn.element.scrollIntoView({ block: 'center', behavior: 'instant' });
+        await sleep(150);
+
         // For soft limit detection: check text or aria-label before/after click
         const labelBefore = btn.textNode
           ? btn.textNode.textContent.trim()
@@ -240,15 +311,15 @@
 
         humanClick(btn.element);
 
-        // Wait a moment to check if button changed
-        await sleep(300);
+        // Wait for Facebook to update the DOM after click
+        await sleep(600);
         const labelAfter = btn.textNode
           ? btn.textNode.textContent.trim()
           : (btn.element.getAttribute('aria-label') || '').trim();
 
         if (labelAfter.toLowerCase() === labelBefore.toLowerCase()) {
           softLimitStreak++;
-          if (softLimitStreak >= 3) {
+          if (softLimitStreak >= 5) {
             setState(State.SOFT_LIMITED);
             broadcastStatus();
             return;
@@ -380,6 +451,7 @@
       findInviteTextNodes,
       findAriaLabelButtons,
       findInviteButtons,
+      findScrollContainer,
       getClickableTarget,
       isVisible,
       State,
