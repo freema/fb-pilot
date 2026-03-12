@@ -199,3 +199,7 @@ A: `activeTab` for popup-to-tab communication, `host_permissions` for the conten
 ## License
 
 See [LICENSE](LICENSE) for details.
+
+## Testing
+
+This section was added by CodeForge E2E Test 2.
