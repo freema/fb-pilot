@@ -1,3 +1,5 @@
+// CodeForge E2E Test 1 - this is a test comment, please ignore
+// CodeForge E2E Test 1 - follow-up instruction applied
 # FB Pilot
 
 > Chrome extension pro správu Facebook stránek. Hromadné zvání fanoušků ze seznamu reakcí s lidským klikáním a ochranou proti rate limitům.
