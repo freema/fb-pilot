@@ -11,6 +11,7 @@ var FB_PILOT_DEFAULTS = {
   coffeeBreakDuration: 5000,
   inviteWord: 'Pozvat',
   detectMode: 'both',
+  notifications: true,
 };
 
 if (typeof module !== 'undefined' && module.exports) {

@@ -59,7 +59,9 @@ describe('i18n', () => {
   test('EN has all required keys', () => {
     const keys = ['start', 'stop', 'idle', 'running', 'waiting', 'softLimited',
       'batchDone', 'batch', 'today', 'settings', 'detectMode', 'detectBoth',
-      'detectText', 'detectAria'];
+      'detectText', 'detectAria', 'notifications', 'history', 'historyDate',
+      'historyInvites', 'historySoftLimits', 'historySessions', 'historyEmpty',
+      'historyClear', 'historyTotal'];
     keys.forEach((k) => {
       expect(popupModule.i18n.en).toHaveProperty(k);
     });
@@ -109,6 +111,23 @@ describe('i18n', () => {
 
     expect(chrome.storage.local.set).toHaveBeenCalledWith({ fbPilotLang: 'cz' });
   });
+
+  test('applyLanguage updates history labels', () => {
+    popupModule.applyLanguage('en');
+
+    expect(document.getElementById('history-label').textContent).toBe('History');
+    expect(document.getElementById('history-col-date').textContent).toBe('Date');
+    expect(document.getElementById('history-col-invites').textContent).toBe('Invites');
+    expect(document.getElementById('history-clear-btn').textContent).toBe('Clear history');
+  });
+
+  test('applyLanguage updates notification label', () => {
+    popupModule.applyLanguage('en');
+    expect(document.getElementById('label-notifications').textContent).toBe('Notifications');
+
+    popupModule.applyLanguage('cz');
+    expect(document.getElementById('label-notifications').textContent).toBe('Notifikace');
+  });
 });
 
 describe('Settings', () => {
@@ -137,6 +156,16 @@ describe('Settings', () => {
     expect(settings.detectMode).toBe('both');
   });
 
+  test('getSettingsFromUI includes notifications setting', () => {
+    document.getElementById('notifications-toggle').checked = true;
+    const settings = popupModule.getSettingsFromUI();
+    expect(settings.notifications).toBe(true);
+
+    document.getElementById('notifications-toggle').checked = false;
+    const settings2 = popupModule.getSettingsFromUI();
+    expect(settings2.notifications).toBe(false);
+  });
+
   test('applySettingsToUI sets all values including detectMode', () => {
     popupModule.applySettingsToUI({
       inviteWord: 'Pozvat',
@@ -157,6 +186,19 @@ describe('Settings', () => {
     expect(document.getElementById('coffee-duration').value).toBe('10000');
   });
 
+  test('applySettingsToUI sets notifications toggle', () => {
+    popupModule.applySettingsToUI({ notifications: false });
+    expect(document.getElementById('notifications-toggle').checked).toBe(false);
+
+    popupModule.applySettingsToUI({ notifications: true });
+    expect(document.getElementById('notifications-toggle').checked).toBe(true);
+  });
+
+  test('applySettingsToUI defaults notifications to true', () => {
+    popupModule.applySettingsToUI({});
+    expect(document.getElementById('notifications-toggle').checked).toBe(true);
+  });
+
   test('saveSettings persists to chrome.storage', async () => {
     document.getElementById('max-batch').value = '75';
     await popupModule.saveSettings();
@@ -172,6 +214,14 @@ describe('Settings', () => {
 
     const call = chrome.storage.local.set.mock.calls.at(-1)[0];
     expect(call.fbPilotSettings.detectMode).toBe('aria');
+  });
+
+  test('saveSettings includes notifications', async () => {
+    document.getElementById('notifications-toggle').checked = false;
+    await popupModule.saveSettings();
+
+    const call = chrome.storage.local.set.mock.calls.at(-1)[0];
+    expect(call.fbPilotSettings.notifications).toBe(false);
   });
 
   test('applySettingsToUI handles missing detectMode gracefully', () => {
@@ -268,5 +318,82 @@ describe('updateUI', () => {
   test('handles missing batchCount', () => {
     popupModule.updateUI({ state: 'IDLE' });
     expect(document.getElementById('batch-count').textContent).toBe('0');
+  });
+});
+
+// ── History rendering ─────────────────────────────────────────────────────────
+
+describe('renderHistory', () => {
+  test('shows empty message when log is empty', () => {
+    popupModule.renderHistory([]);
+    const emptyEl = document.getElementById('history-empty');
+    expect(emptyEl.classList.contains('hidden')).toBe(false);
+  });
+
+  test('shows empty message when log is null', () => {
+    popupModule.renderHistory(null);
+    const emptyEl = document.getElementById('history-empty');
+    expect(emptyEl.classList.contains('hidden')).toBe(false);
+  });
+
+  test('renders log entries as table rows', () => {
+    popupModule.renderHistory([
+      { date: '2026-03-15', invites: 42, softLimits: 1, sessions: 3 },
+      { date: '2026-03-14', invites: 28, softLimits: 0, sessions: 2 },
+    ]);
+
+    const tbody = document.getElementById('history-tbody');
+    expect(tbody.children).toHaveLength(2);
+
+    const emptyEl = document.getElementById('history-empty');
+    expect(emptyEl.classList.contains('hidden')).toBe(true);
+  });
+
+  test('formats date as DD.MM.', () => {
+    popupModule.renderHistory([
+      { date: '2026-03-15', invites: 10, softLimits: 0, sessions: 1 },
+    ]);
+
+    const tbody = document.getElementById('history-tbody');
+    const firstCell = tbody.children[0].children[0];
+    expect(firstCell.textContent).toBe('15.03.');
+  });
+
+  test('shows totals in tfoot', () => {
+    popupModule.renderHistory([
+      { date: '2026-03-15', invites: 42, softLimits: 1, sessions: 3 },
+      { date: '2026-03-14', invites: 28, softLimits: 2, sessions: 2 },
+    ]);
+
+    const tfoot = document.getElementById('history-tfoot');
+    expect(tfoot.children).toHaveLength(1);
+    const cells = tfoot.children[0].children;
+    expect(cells[1].textContent).toBe('70'); // 42 + 28
+    expect(cells[2].textContent).toBe('3');  // 1 + 2
+    expect(cells[3].textContent).toBe('5');  // 3 + 2
+  });
+
+  test('limits display to 7 entries', () => {
+    const log = [];
+    for (let i = 0; i < 15; i++) {
+      log.push({ date: `2026-03-${String(i + 1).padStart(2, '0')}`, invites: i, softLimits: 0, sessions: 1 });
+    }
+    popupModule.renderHistory(log);
+
+    const tbody = document.getElementById('history-tbody');
+    expect(tbody.children).toHaveLength(7);
+  });
+
+  test('handles entries with missing fields', () => {
+    popupModule.renderHistory([
+      { date: '2026-03-15' },
+    ]);
+
+    const tbody = document.getElementById('history-tbody');
+    expect(tbody.children).toHaveLength(1);
+    const cells = tbody.children[0].children;
+    expect(cells[1].textContent).toBe('0');
+    expect(cells[2].textContent).toBe('0');
+    expect(cells[3].textContent).toBe('0');
   });
 });
