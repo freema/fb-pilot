@@ -40,7 +40,7 @@ jobs:
       - name: Fetch base branch
         run: git fetch origin main
 
-      - uses: docker://ghcr.io/freema/codeforge-action:v0.2.0
+      - uses: docker://ghcr.io/freema/codeforge-action:latest
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
