@@ -1,0 +1,52 @@
+name: Code Review
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review'
+        required: true
+        type: number
+      cli:
+        description: 'AI CLI to use'
+        required: false
+        default: 'claude-code'
+        type: choice
+        options:
+          - claude-code
+          - codex
+      prompt:
+        description: 'Additional review instructions (optional)'
+        required: false
+        type: string
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: refs/pull/${{ inputs.pr_number }}/head
+
+      - name: Fetch base branch
+        run: git fetch origin main
+
+      - uses: freema/codeforge-action@v0.2.0
+        with:
+          task_type: pr_review
+          cli: ${{ inputs.cli }}
+          prompt: ${{ inputs.prompt }}
+          post_comments: 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PROVIDER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
