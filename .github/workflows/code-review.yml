@@ -40,13 +40,12 @@ jobs:
       - name: Fetch base branch
         run: git fetch origin main
 
-      - uses: freema/codeforge-action@v0.2.0
-        with:
-          task_type: pr_review
-          cli: ${{ inputs.cli }}
-          prompt: ${{ inputs.prompt }}
-          post_comments: 'true'
+      - uses: docker://ghcr.io/freema/codeforge-action:v0.2.0
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TASK_TYPE: pr_review
+          INPUT_CLI: ${{ inputs.cli }}
+          INPUT_PROMPT: ${{ inputs.prompt }}
+          INPUT_POST_COMMENTS: 'true'
           INPUT_PROVIDER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
