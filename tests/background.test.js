@@ -89,3 +89,102 @@ describe('Badge updates', () => {
     expect(lastCall[0].text).toBe('1');
   });
 });
+
+// ── Activity Log ──────────────────────────────────────────────────────────────
+
+describe('Activity log', () => {
+  test('getLog returns empty array when no data', async () => {
+    const log = await bgModule.getLog();
+    expect(log).toEqual([]);
+  });
+
+  test('updateLog creates entry for today', async () => {
+    const log = await bgModule.updateLog({ invites: 5 });
+    expect(log).toHaveLength(1);
+    expect(log[0].date).toBe(bgModule.todayKey());
+    expect(log[0].invites).toBe(5);
+  });
+
+  test('updateLog accumulates invites on same day', async () => {
+    await bgModule.updateLog({ invites: 3 });
+    const log = await bgModule.updateLog({ invites: 2 });
+    expect(log).toHaveLength(1);
+    expect(log[0].invites).toBe(5);
+  });
+
+  test('updateLog tracks softLimits', async () => {
+    await bgModule.updateLog({ softLimits: 1 });
+    const log = await bgModule.updateLog({ softLimits: 1 });
+    expect(log[0].softLimits).toBe(2);
+  });
+
+  test('updateLog tracks sessions', async () => {
+    await bgModule.updateLog({ sessions: 1 });
+    const log = await bgModule.updateLog({ sessions: 1 });
+    expect(log[0].sessions).toBe(2);
+  });
+
+  test('incrementCounter also updates log', async () => {
+    await bgModule.incrementCounter();
+    await bgModule.incrementCounter();
+    const log = await bgModule.getLog();
+    expect(log[0].invites).toBe(2);
+  });
+
+  test('clearLog empties the log', async () => {
+    await bgModule.updateLog({ invites: 10 });
+    await bgModule.clearLog();
+    const log = await bgModule.getLog();
+    expect(log).toEqual([]);
+  });
+
+  test('updateLog limits entries to MAX_LOG_DAYS', async () => {
+    // Manually create more than MAX_LOG_DAYS entries
+    const entries = [];
+    for (let i = 0; i < bgModule.MAX_LOG_DAYS + 5; i++) {
+      entries.push({ date: `2025-01-${String(i + 1).padStart(2, '0')}`, invites: i, softLimits: 0, sessions: 0 });
+    }
+    await chrome.storage.local.set({ [bgModule.LOG_KEY]: entries });
+
+    // Adding a new entry should trim to MAX_LOG_DAYS
+    const log = await bgModule.updateLog({ invites: 1 });
+    expect(log.length).toBeLessThanOrEqual(bgModule.MAX_LOG_DAYS);
+  });
+
+  test('exports LOG_KEY and MAX_LOG_DAYS constants', () => {
+    expect(bgModule.LOG_KEY).toBe('fbPilotLog');
+    expect(bgModule.MAX_LOG_DAYS).toBe(30);
+  });
+});
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+
+describe('Notifications', () => {
+  test('areNotificationsEnabled returns true by default', async () => {
+    const enabled = await bgModule.areNotificationsEnabled();
+    expect(enabled).toBe(true);
+  });
+
+  test('areNotificationsEnabled returns false when disabled', async () => {
+    await chrome.storage.local.set({ fbPilotSettings: { notifications: false } });
+    const enabled = await bgModule.areNotificationsEnabled();
+    expect(enabled).toBe(false);
+  });
+
+  test('showNotification creates notification when enabled', async () => {
+    await bgModule.showNotification('Test Title', 'Test Message');
+    expect(chrome.notifications.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'basic',
+        title: 'Test Title',
+        message: 'Test Message',
+      })
+    );
+  });
+
+  test('showNotification does not create notification when disabled', async () => {
+    await chrome.storage.local.set({ fbPilotSettings: { notifications: false } });
+    await bgModule.showNotification('Title', 'Message');
+    expect(chrome.notifications.create).not.toHaveBeenCalled();
+  });
+});

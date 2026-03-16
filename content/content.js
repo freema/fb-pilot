@@ -285,6 +285,7 @@
         if (signal.aborted) break;
         if (!gotNew) {
           setState(State.BATCH_DONE);
+          notifyBackground('notifyBatchDone', { message: `Batch complete! ${batchCount} invites sent.` });
           break;
         }
         setState(State.RUNNING);
@@ -296,6 +297,7 @@
         if (signal.aborted) break;
         if (batchCount >= settings.maxPerBatch) {
           setState(State.BATCH_DONE);
+          notifyBackground('notifyBatchDone', { message: `Batch complete! ${batchCount} invites sent.` });
           broadcastStatus();
           return;
         }
@@ -321,6 +323,7 @@
           softLimitStreak++;
           if (softLimitStreak >= 5) {
             setState(State.SOFT_LIMITED);
+            notifyBackground('logSoftLimit', { message: 'Soft limit detected — Facebook may be throttling.' });
             broadcastStatus();
             return;
           }
@@ -406,6 +409,7 @@
   function start() {
     if (state === State.RUNNING) return;
     abortController = new AbortController();
+    notifyBackground('logSession');
     runClickLoop(abortController.signal);
   }
 

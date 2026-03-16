@@ -78,6 +78,32 @@
           <span id="label-coffee-duration">Coffee break duration (ms)</span>
           <input type="number" id="coffee-duration" min="0" max="60000">
         </label>
+        <label class="toggle-label">
+          <span id="label-notifications">Notifications</span>
+          <input type="checkbox" id="notifications-toggle" checked>
+        </label>
+      </div>
+    </details>
+
+    <details class="history-panel">
+      <summary id="history-label">History</summary>
+      <div class="history-body">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th id="history-col-date">Date</th>
+              <th id="history-col-invites">Invites</th>
+              <th id="history-col-soft">SL</th>
+              <th id="history-col-sessions">Ses.</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody">
+          </tbody>
+          <tfoot id="history-tfoot">
+          </tfoot>
+        </table>
+        <p id="history-empty" class="history-empty hidden">No history yet</p>
+        <button id="history-clear-btn" class="btn-clear">Clear history</button>
       </div>
     </details>
   </div>

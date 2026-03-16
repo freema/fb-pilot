@@ -176,6 +176,7 @@ header h1 {
   border: 1px solid #dddfe2;
   border-radius: 6px;
   overflow: hidden;
+  margin-bottom: 8px;
 }
 
 .settings-panel summary {
@@ -229,6 +230,10 @@ header h1 {
   text-align: left;
 }
 
+.settings-body input[type="checkbox"] {
+  width: auto;
+}
+
 .settings-body select {
   width: 140px;
   padding: 4px 6px;
@@ -237,6 +242,103 @@ header h1 {
   font-size: 12px;
   background: #fff;
   cursor: pointer;
+}
+
+.toggle-label {
+  border-top: 1px solid #dddfe2;
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+/* ── History panel ──────────────────────────────────────────────────────── */
+
+.history-panel {
+  border: 1px solid #dddfe2;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.history-panel summary {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #f0f2f5;
+  list-style: none;
+}
+
+.history-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.history-panel summary::before {
+  content: '\25B6  ';
+  font-size: 10px;
+}
+
+.history-panel[open] summary::before {
+  content: '\25BC  ';
+}
+
+.history-body {
+  padding: 12px;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.history-table th,
+.history-table td {
+  padding: 4px 6px;
+  text-align: center;
+  border-bottom: 1px solid #dddfe2;
+}
+
+.history-table th {
+  font-weight: 600;
+  color: #65676b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-size: 10px;
+}
+
+.history-table td:first-child,
+.history-table th:first-child {
+  text-align: left;
+}
+
+.history-table tfoot td {
+  font-weight: 700;
+  border-top: 2px solid #dddfe2;
+  border-bottom: none;
+}
+
+.history-empty {
+  text-align: center;
+  color: #65676b;
+  font-size: 12px;
+  padding: 12px 0;
+}
+
+.btn-clear {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px;
+  border: 1px solid #dddfe2;
+  border-radius: 4px;
+  font-size: 11px;
+  background: #f0f2f5;
+  color: #65676b;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-clear:hover {
+  background: #e4e6eb;
 }
 
 /* ── Dark mode ──────────────────────────────────────────────────────────── */
@@ -271,11 +373,13 @@ header h1 {
     color: #b0b3b8;
   }
 
-  .settings-panel {
+  .settings-panel,
+  .history-panel {
     border-color: #4e4f50;
   }
 
-  .settings-panel summary {
+  .settings-panel summary,
+  .history-panel summary {
     background: #3a3b3c;
     color: #e4e6eb;
   }
@@ -289,5 +393,36 @@ header h1 {
 
   .status-label {
     color: #e4e6eb;
+  }
+
+  .toggle-label {
+    border-color: #4e4f50;
+  }
+
+  .history-table th,
+  .history-table td {
+    border-color: #4e4f50;
+  }
+
+  .history-table th {
+    color: #b0b3b8;
+  }
+
+  .history-table tfoot td {
+    border-color: #4e4f50;
+  }
+
+  .history-empty {
+    color: #b0b3b8;
+  }
+
+  .btn-clear {
+    background: #3a3b3c;
+    border-color: #4e4f50;
+    color: #b0b3b8;
+  }
+
+  .btn-clear:hover {
+    background: #4e4f50;
   }
 }
