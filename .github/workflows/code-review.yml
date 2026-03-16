@@ -1,10 +1,12 @@
 name: Code Review
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'PR number to review'
+        description: 'PR number to review (only for manual trigger)'
         required: true
         type: number
       cli:
@@ -35,17 +37,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: refs/pull/${{ inputs.pr_number }}/head
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || format('refs/pull/{0}/head', inputs.pr_number) }}
 
       - name: Fetch base branch
         run: git fetch origin main
 
-      - uses: docker://ghcr.io/freema/codeforge-action:latest
+      - uses: freema/codeforge/codeforge-action@main
+        with:
+          api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          cli: ${{ inputs.cli || 'claude-code' }}
+          prompt: ${{ inputs.prompt || '' }}
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          INPUT_TASK_TYPE: pr_review
-          INPUT_CLI: ${{ inputs.cli }}
-          INPUT_PROMPT: ${{ inputs.prompt }}
-          INPUT_POST_COMMENTS: 'true'
-          INPUT_PROVIDER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
