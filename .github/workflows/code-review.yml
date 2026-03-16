@@ -42,7 +42,7 @@ jobs:
       - name: Fetch base branch
         run: git fetch origin main
 
-      - uses: freema/codeforge/codeforge-action@main
+      - uses: freema/codeforge@v1
         with:
           api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           cli: ${{ inputs.cli || 'claude-code' }}
