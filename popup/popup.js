@@ -44,6 +44,7 @@
   const delayMaxInput = $('delay-max');
   const coffeeIntervalInput = $('coffee-interval');
   const coffeeDurationInput = $('coffee-duration');
+  const notificationsToggle = $('notifications-toggle');
 
   // Label elements
   const labelInviteWord = $('label-invite-word');
@@ -56,6 +57,18 @@
   const labelDelayMax = $('label-delay-max');
   const labelCoffeeInterval = $('label-coffee-interval');
   const labelCoffeeDuration = $('label-coffee-duration');
+  const labelNotifications = $('label-notifications');
+
+  // History elements
+  const historyLabel = $('history-label');
+  const historyTbody = $('history-tbody');
+  const historyTfoot = $('history-tfoot');
+  const historyEmpty = $('history-empty');
+  const historyClearBtn = $('history-clear-btn');
+  const historyColDate = $('history-col-date');
+  const historyColInvites = $('history-col-invites');
+  const historyColSoft = $('history-col-soft');
+  const historyColSessions = $('history-col-sessions');
 
   let currentLang = 'cz';
   let isRunning = false;
@@ -76,7 +89,8 @@
       delayMin: parseInt(delayMinInput.value, 10) || defaults.delayMin,
       delayMax: parseInt(delayMaxInput.value, 10) || defaults.delayMax,
       coffeeBreakInterval: parseInt(coffeeIntervalInput.value, 10) || defaults.coffeeBreakInterval,
-      coffeeBreakDuration: parseInt(coffeeDurationInput.value, 10) || defaults.coffeeBreakDuration,
+      coffeeBreakDuration: parseInt(coffeeDurationInput.value, 10) || defaults.coffeBreakDuration,
+      notifications: notificationsToggle.checked,
     };
   }
 
@@ -88,6 +102,7 @@
     delayMaxInput.value = s.delayMax || defaults.delayMax;
     coffeeIntervalInput.value = s.coffeeBreakInterval || defaults.coffeeBreakInterval;
     coffeeDurationInput.value = s.coffeeBreakDuration || defaults.coffeeBreakDuration;
+    notificationsToggle.checked = s.notifications !== false;
   }
 
   async function loadSettings() {
@@ -132,6 +147,16 @@
     labelDelayMax.textContent = t.delayMax;
     labelCoffeeInterval.textContent = t.coffeeInterval;
     labelCoffeeDuration.textContent = t.coffeeDuration;
+    labelNotifications.textContent = t.notifications;
+
+    // History labels
+    historyLabel.textContent = t.history;
+    historyColDate.textContent = t.historyDate;
+    historyColInvites.textContent = t.historyInvites;
+    historyColSoft.textContent = t.historySoftLimits;
+    historyColSessions.textContent = t.historySessions;
+    historyEmpty.textContent = t.historyEmpty;
+    historyClearBtn.textContent = t.historyClear;
 
     // Update status text based on current state
     updateStatusText(statusIndicator.className);
@@ -207,6 +232,62 @@
     }
   }
 
+  // ── History ────────────────────────────────────────────────────────────────
+
+  function renderHistory(log) {
+    const t = i18n[currentLang] || i18n.en;
+    historyTbody.innerHTML = '';
+    historyTfoot.innerHTML = '';
+
+    if (!log || log.length === 0) {
+      historyEmpty.classList.remove('hidden');
+      return;
+    }
+
+    historyEmpty.classList.add('hidden');
+
+    let totalInvites = 0;
+    let totalSoftLimits = 0;
+    let totalSessions = 0;
+
+    // Show last 7 days
+    const entries = log.slice(0, 7);
+    for (const entry of entries) {
+      const tr = document.createElement('tr');
+      // Format date as DD.MM.
+      const parts = entry.date.split('-');
+      const dateStr = parts[2] + '.' + parts[1] + '.';
+      tr.innerHTML =
+        '<td>' + dateStr + '</td>' +
+        '<td>' + (entry.invites || 0) + '</td>' +
+        '<td>' + (entry.softLimits || 0) + '</td>' +
+        '<td>' + (entry.sessions || 0) + '</td>';
+      historyTbody.appendChild(tr);
+      totalInvites += entry.invites || 0;
+      totalSoftLimits += entry.softLimits || 0;
+      totalSessions += entry.sessions || 0;
+    }
+
+    const tfootRow = document.createElement('tr');
+    tfootRow.innerHTML =
+      '<td>' + (t.historyTotal || 'Total') + '</td>' +
+      '<td>' + totalInvites + '</td>' +
+      '<td>' + totalSoftLimits + '</td>' +
+      '<td>' + totalSessions + '</td>';
+    historyTfoot.appendChild(tfootRow);
+  }
+
+  async function loadHistory() {
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'getLog' });
+      if (response && response.log) {
+        renderHistory(response.log);
+      }
+    } catch (_) {
+      // background not ready
+    }
+  }
+
   // ── Communication ──────────────────────────────────────────────────────────
 
   async function getActiveTab() {
@@ -272,9 +353,19 @@
   });
 
   // Save settings on any input change
-  const settingInputs = [inviteWordInput, detectModeSelect, maxBatchInput, delayMinInput, delayMaxInput, coffeeIntervalInput, coffeeDurationInput];
+  const settingInputs = [inviteWordInput, detectModeSelect, maxBatchInput, delayMinInput, delayMaxInput, coffeeIntervalInput, coffeeDurationInput, notificationsToggle];
   settingInputs.forEach((input) => {
     input.addEventListener('change', saveSettings);
+  });
+
+  // History clear button
+  historyClearBtn.addEventListener('click', async () => {
+    try {
+      await chrome.runtime.sendMessage({ type: 'clearLog' });
+      renderHistory([]);
+    } catch (_) {
+      // background not ready
+    }
   });
 
   // Listen for status updates from content script
@@ -291,6 +382,7 @@
   }).then(() => {
     applyLanguage(currentLang);
     startPolling();
+    loadHistory();
   });
 
   // Clean up on close
@@ -307,6 +399,8 @@
       updateUI,
       loadSettings,
       saveSettings,
+      renderHistory,
+      loadHistory,
     };
   }
 })();

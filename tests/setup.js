@@ -66,6 +66,16 @@ const actionMock = {
   setBadgeBackgroundColor: jest.fn(() => Promise.resolve()),
 };
 
+// ── chrome.notifications mock ────────────────────────────────────────────────
+const notificationsMock = {
+  create: jest.fn((_options, callback) => {
+    if (callback) callback('test-notification-id');
+  }),
+  clear: jest.fn((_id, callback) => {
+    if (callback) callback(true);
+  }),
+};
+
 // ── Assemble global chrome object ────────────────────────────────────────────
 global.chrome = {
   storage: {
@@ -74,6 +84,7 @@ global.chrome = {
   runtime: runtimeMock,
   tabs: tabsMock,
   action: actionMock,
+  notifications: notificationsMock,
 };
 
 // ── Shared defaults (single source of truth) ─────────────────────────────────
@@ -97,6 +108,8 @@ global.__testHelpers = {
     tabsMock.sendMessage.mockClear();
     actionMock.setBadgeText.mockClear();
     actionMock.setBadgeBackgroundColor.mockClear();
+    notificationsMock.create.mockClear();
+    notificationsMock.clear.mockClear();
     messageListeners.length = 0;
   },
 };

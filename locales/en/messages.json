@@ -20,5 +20,14 @@
   "coffeeInterval": "Coffee break every N clicks",
   "coffeeDuration": "Coffee break duration (ms)",
   "softLimitBanner": "Soft limit detected \u2014 Facebook may be throttling.",
-  "scrollPrompt": "Scroll down to load more reactions"
+  "scrollPrompt": "Scroll down to load more reactions",
+  "notifications": "Notifications",
+  "history": "History",
+  "historyDate": "Date",
+  "historyInvites": "Invites",
+  "historySoftLimits": "Soft limits",
+  "historySessions": "Sessions",
+  "historyEmpty": "No history yet",
+  "historyClear": "Clear history",
+  "historyTotal": "Total"
 }

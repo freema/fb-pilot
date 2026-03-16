@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "FB Pilot",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Hromadné zvání fanoušků ze seznamu reakcí s lidským klikáním, auto-scrollem a ochranou proti rate limitům.",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "storage", "notifications"],
   "host_permissions": ["https://www.facebook.com/*"],
   "background": {
     "service_worker": "background/background.js"
