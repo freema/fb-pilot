@@ -130,15 +130,13 @@
         updateLog({ sessions: 1 }).then(() => sendResponse({ ok: true }));
         return true;
       case 'logSoftLimit':
-        updateLog({ softLimits: 1 }).then(() => {
-          showNotification('FB Pilot', msg.message || 'Soft limit detected');
-          sendResponse({ ok: true });
-        });
+        updateLog({ softLimits: 1 })
+          .then(() => showNotification('FB Pilot', msg.message || 'Soft limit detected'))
+          .then(() => sendResponse({ ok: true }));
         return true;
       case 'notifyBatchDone':
-        showNotification('FB Pilot', msg.message || 'Batch complete!').then(() => {
-          sendResponse({ ok: true });
-        });
+        showNotification('FB Pilot', msg.message || 'Batch complete!')
+          .then(() => sendResponse({ ok: true }));
         return true;
       default:
         // Let other listeners handle it

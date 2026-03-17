@@ -89,7 +89,7 @@
       delayMin: parseInt(delayMinInput.value, 10) || defaults.delayMin,
       delayMax: parseInt(delayMaxInput.value, 10) || defaults.delayMax,
       coffeeBreakInterval: parseInt(coffeeIntervalInput.value, 10) || defaults.coffeeBreakInterval,
-      coffeeBreakDuration: parseInt(coffeeDurationInput.value, 10) || defaults.coffeBreakDuration,
+      coffeeBreakDuration: parseInt(coffeeDurationInput.value, 10) || defaults.coffeeBreakDuration,
       notifications: notificationsToggle.checked,
     };
   }
@@ -234,6 +234,12 @@
 
   // ── History ────────────────────────────────────────────────────────────────
 
+  function createCell(text) {
+    const td = document.createElement('td');
+    td.textContent = text;
+    return td;
+  }
+
   function renderHistory(log) {
     const t = i18n[currentLang] || i18n.en;
     historyTbody.innerHTML = '';
@@ -254,14 +260,13 @@
     const entries = log.slice(0, 7);
     for (const entry of entries) {
       const tr = document.createElement('tr');
-      // Format date as DD.MM.
+      // Format date as DD.MM. — only accept YYYY-MM-DD format
       const parts = entry.date.split('-');
       const dateStr = parts[2] + '.' + parts[1] + '.';
-      tr.innerHTML =
-        '<td>' + dateStr + '</td>' +
-        '<td>' + (entry.invites || 0) + '</td>' +
-        '<td>' + (entry.softLimits || 0) + '</td>' +
-        '<td>' + (entry.sessions || 0) + '</td>';
+      tr.appendChild(createCell(dateStr));
+      tr.appendChild(createCell(String(entry.invites || 0)));
+      tr.appendChild(createCell(String(entry.softLimits || 0)));
+      tr.appendChild(createCell(String(entry.sessions || 0)));
       historyTbody.appendChild(tr);
       totalInvites += entry.invites || 0;
       totalSoftLimits += entry.softLimits || 0;
@@ -269,11 +274,10 @@
     }
 
     const tfootRow = document.createElement('tr');
-    tfootRow.innerHTML =
-      '<td>' + (t.historyTotal || 'Total') + '</td>' +
-      '<td>' + totalInvites + '</td>' +
-      '<td>' + totalSoftLimits + '</td>' +
-      '<td>' + totalSessions + '</td>';
+    tfootRow.appendChild(createCell(t.historyTotal || 'Total'));
+    tfootRow.appendChild(createCell(String(totalInvites)));
+    tfootRow.appendChild(createCell(String(totalSoftLimits)));
+    tfootRow.appendChild(createCell(String(totalSessions)));
     historyTfoot.appendChild(tfootRow);
   }
 

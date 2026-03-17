@@ -68,12 +68,8 @@ const actionMock = {
 
 // ── chrome.notifications mock ────────────────────────────────────────────────
 const notificationsMock = {
-  create: jest.fn((_options, callback) => {
-    if (callback) callback('test-notification-id');
-  }),
-  clear: jest.fn((_id, callback) => {
-    if (callback) callback(true);
-  }),
+  create: jest.fn(),
+  clear: jest.fn(),
 };
 
 // ── Assemble global chrome object ────────────────────────────────────────────

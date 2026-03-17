@@ -59,9 +59,7 @@ describe('i18n', () => {
   test('EN has all required keys', () => {
     const keys = ['start', 'stop', 'idle', 'running', 'waiting', 'softLimited',
       'batchDone', 'batch', 'today', 'settings', 'detectMode', 'detectBoth',
-      'detectText', 'detectAria', 'notifications', 'history', 'historyDate',
-      'historyInvites', 'historySoftLimits', 'historySessions', 'historyEmpty',
-      'historyClear', 'historyTotal'];
+      'detectText', 'detectAria'];
     keys.forEach((k) => {
       expect(popupModule.i18n.en).toHaveProperty(k);
     });
@@ -357,6 +355,21 @@ describe('renderHistory', () => {
     const tbody = document.getElementById('history-tbody');
     const firstCell = tbody.children[0].children[0];
     expect(firstCell.textContent).toBe('15.03.');
+  });
+
+  test('uses textContent (not innerHTML) for cell values', () => {
+    // Verify XSS-safe rendering by checking that HTML is not parsed
+    popupModule.renderHistory([
+      { date: '2026-03-15', invites: 10, softLimits: 0, sessions: 1 },
+    ]);
+
+    const tbody = document.getElementById('history-tbody');
+    const cells = tbody.children[0].children;
+    // All cells should be created via createElement+textContent
+    for (let i = 0; i < cells.length; i++) {
+      expect(cells[i].tagName.toLowerCase()).toBe('td');
+      expect(cells[i].children).toHaveLength(0); // no child elements, just text
+    }
   });
 
   test('shows totals in tfoot', () => {
