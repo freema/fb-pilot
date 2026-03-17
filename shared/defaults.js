@@ -5,8 +5,8 @@
 /* eslint-disable no-var */
 var FB_PILOT_DEFAULTS = {
   maxPerBatch: 50,
-  delayMin: 800,
-  delayMax: 2500,
+  delayMin: 1000,
+  delayMax: 3000,
   coffeeBreakInterval: 15,
   coffeeBreakDuration: 5000,
   inviteWord: 'Pozvat',
