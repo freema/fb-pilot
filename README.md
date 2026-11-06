@@ -1,5 +1,8 @@
 # FB Pilot
 
+> [!WARNING]
+> **Archived — no longer maintained.** This repository is read-only and the extension will not receive further updates.
+
 > Chrome extension pro správu Facebook stránek. Hromadné zvání fanoušků ze seznamu reakcí s lidským klikáním a ochranou proti rate limitům.
 
 ![CI](https://github.com/user/fb-pilot/actions/workflows/test.yml/badge.svg)
